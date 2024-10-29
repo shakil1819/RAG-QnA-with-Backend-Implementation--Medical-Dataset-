@@ -3,9 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 
-from endpoints.documents_rag.routers import qa_router
-from endpoints.documents_rag.exceptions import RAGException
-from endpoints.documents_rag.logging import logger
+from app.endpoints.documents_rag.routers import router
+from app.endpoints.documents_rag.exceptions import RAGException
+from app.endpoints.documents_rag.logging import logger
 
 app = FastAPI(
     title="RAG QA System",
@@ -22,7 +22,7 @@ app.add_middleware(
 )
 
 
-app.include_router(qa_router.router, prefix="/api", tags=["QA"])
+app.include_router(router, prefix="/api", tags=["QA"])
 
 @app.exception_handler(RAGException)
 async def rag_exception_handler(request: Request, exc: RAGException):

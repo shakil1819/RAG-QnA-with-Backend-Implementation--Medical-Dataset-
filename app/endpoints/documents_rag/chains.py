@@ -6,7 +6,7 @@ from langchain.chains import RetrievalQA
 from pathlib import Path
 from typing import List, Optional
 
-from endpoints.documents_rag.logging import logger
+from app.endpoints.documents_rag.logging import logger
 from app.configs import settings
 
 class RAGChain:

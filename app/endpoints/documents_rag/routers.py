@@ -2,10 +2,10 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import Annotated
 from fastapi.security.api_key import APIKey, APIKeyHeader
 
-from ..schemas import QuestionRequest, AnswerResponse, ErrorResponse
-from ..chains import rag_chain
-from ..exceptions import RAGException
-from ..logging import logger
+from app.endpoints.documents_rag.schemas import QuestionRequest, AnswerResponse, ErrorResponse
+from app.endpoints.documents_rag.chains import rag_chain
+from app.endpoints.documents_rag.exceptions import RAGException
+from app.endpoints.documents_rag.logging import logger
 from app.configs import settings
 
 router = APIRouter()
