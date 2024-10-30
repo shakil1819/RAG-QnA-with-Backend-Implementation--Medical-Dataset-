@@ -24,6 +24,7 @@
       "ms-azuretools.vscode-docker"
       "ms-python.debugpy"
       "ms-python.python"
+      "mechatroner.rainbow-csv"
       
     ];
 
