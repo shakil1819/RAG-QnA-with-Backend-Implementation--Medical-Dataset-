@@ -18,10 +18,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p logs
+RUN mkdir -p logs vectors && chmod 777 logs/ vectors/
 
-RUN useradd -m appuser && chown -R appuser:appuser /app
-USER appuser
+# RUN useradd -m appuser && chown -R appuser:appuser /app
+# USER appuser
 
 EXPOSE 8000
 
