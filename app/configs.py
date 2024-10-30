@@ -9,6 +9,6 @@ class Config(BaseSettings):
     DATA_DIR: str
     VECTOR_DIR: str
     GPT_4_TEXT_MODEL: str
-
+    LOGS_DIR: str
 
 settings = Config()
