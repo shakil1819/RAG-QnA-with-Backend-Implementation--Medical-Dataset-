@@ -3,11 +3,11 @@ from pydantic_settings import BaseSettings
 
 load_dotenv()
 
-
 class Config(BaseSettings):
     OPENAI_API_KEY: str
-    DATA_PATH: str
-    GPT_4_TEXT_MODEL: str
-    API_KEY: str
-settings = Config()
+    OPENAI_EMBEDDING_MODEL_NAME: str
+    DATA_DIR: str
+    VECTOR_DIR: str
 
+
+settings = Config()
