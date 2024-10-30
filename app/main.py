@@ -1,20 +1,30 @@
-from pydantic import BaseModel
 from fastapi import FastAPI
-from app.rag import get_Retrieval_chain
+from fastapi.middleware.cors import CORSMiddleware
+from app.api import api_router
 
-app = FastAPI()
+app = FastAPI(
+    title="RAG API",
+    description="API for Question Answering using RAG for Medical Dataset (CSV)",
+    version="1.0.0"
+)
 
-chain = get_Retrieval_chain()
+origins = [
+    "http://localhost",
+    "http://localhost:3000",  
+    "http://localhost:8000", 
+]
 
-class Query(BaseModel):
-    input: str
-    detailed: bool = False
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.post("/question")
-def answer_question(query: Query):
-    output = chain.invoke({"input": query.input})
-    if query.detailed:
-        return output
-    else:
-        return output["answer"]
+@app.get("/health", tags=["Health"])
+def health_check():
+    return {"status": "healthy"}
 
+
+app.include_router(api_router, prefix="/api/v1")
