@@ -33,7 +33,8 @@ This project is a FastAPI backend application that implements a Retrieval-Augmen
 2. Create a virtual environment inside the codebase folder:
    ```bash
    python3 -m venv .venv
-   source .venv/bin/activate  # On Windows use .venv\Scripts\activate
+   source .venv/bin/activate
+   mkdir logs/ vectors/
    ```
 
 3. Install the required packages:
