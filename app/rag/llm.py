@@ -15,7 +15,7 @@ from langchain_core.vectorstores.base import VectorStore
 from langchain_core.runnables.base import Runnable
 import argparse
 from app.configs import settings
-
+from app.logging import logger
 load_dotenv()
 
 def load_api_key() -> None:
@@ -105,7 +105,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if path.exists(args.db_path) and args.repopulate is False:
-        print(
+        logger.warning(
             f"The vector DB path '{args.db_path}' already exists. Run with option --repopulate to force repopulation."
         )
         exit()
