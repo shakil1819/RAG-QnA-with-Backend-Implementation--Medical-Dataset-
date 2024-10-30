@@ -3,10 +3,10 @@ from typing import Annotated
 from fastapi.security.api_key import APIKey, APIKeyHeader
 
 from app.endpoints.documents_rag.schemas import QuestionRequest, AnswerResponse, ErrorResponse
-from app.endpoints.documents_rag.chains import rag_chain
 from app.endpoints.documents_rag.exceptions import RAGException
 from app.endpoints.documents_rag.logging import logger
 from app.configs import settings
+from app.endpoints.documents_rag.chains import process_documents_and_answer_question
 
 router = APIRouter()
 
@@ -42,18 +42,17 @@ async def get_answer(
         api_key: API key for authentication
         
     Returns:
-        AnswerResponse containing the generated answer and sources
+        AnswerResponse containing the generated answer
         
     Raises:
         HTTPException: If there's an error processing the request
     """
     try:
         logger.info(f"Processing question: {request.question}")
-        answer, sources = rag_chain.get_answer(request.question)
+        answer = process_documents_and_answer_question(request.question)
         
         return AnswerResponse(
-            answer=answer,
-            sources=sources
+            answer=answer
         )
         
     except RAGException as e:
@@ -67,30 +66,4 @@ async def get_answer(
         raise HTTPException(
             status_code=500,
             detail="An unexpected error occurred"
-        )
-
-@router.post("/load-documents")
-async def load_documents(
-    api_key: Annotated[APIKey, Depends(verify_api_key)]
-):
-    """
-    Load and index documents from the configured data path.
-    
-    Args:
-        api_key: API key for authentication
-        
-    Returns:
-        dict: Status message
-        
-    Raises:
-        HTTPException: If there's an error loading documents
-    """
-    try:
-        rag_chain.load_documents(settings.DATA_PATH)
-        return {"status": "Documents loaded successfully"}
-    except Exception as e:
-        logger.error(f"Error loading documents: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error loading documents: {str(e)}"
         )

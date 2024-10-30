@@ -3,9 +3,7 @@ from typing import List
 
 def clean_text(text: str) -> str:
     """Clean and normalize text content."""
-    # Remove extra whitespace
     text = re.sub(r'\s+', ' ', text.strip())
-    # Remove special characters but keep punctuation
     text = re.sub(r'[^\w\s.,!?-]', '', text)
     return text
 

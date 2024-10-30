@@ -1,68 +1,56 @@
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import FAISS
-from langchain.chat_models import ChatOpenAI
-from langchain.chains import RetrievalQA
-from pathlib import Path
-from typing import List, Optional
-
-from app.endpoints.documents_rag.logging import logger
+from langchain_community.document_loaders.csv_loader import CSVLoader
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+import os
+from dotenv import load_dotenv
+import faiss
+from langchain_community.docstore.in_memory import InMemoryDocstore
+from langchain_community.vectorstores import FAISS
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from app.configs import settings
+from app.endpoints.documents_rag.prompts import system_prompt
+  
 
-class RAGChain:
-    def __init__(self):
-        self.embeddings = OpenAIEmbeddings(openai_api_key=settings.OPENAI_API_KEY)
-        self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=200,
-        )
-        self.llm = ChatOpenAI(
-            temperature=0,
-            model_name="gpt-4",
-            openai_api_key=settings.OPENAI_API_KEY
-        )
-        self.vector_store: Optional[FAISS] = None
-        
-    def load_documents(self, data_path: str) -> None:
-        """Load and index documents from the specified path."""
-        try:
-            data_dir = Path(data_path)
-            texts = []
-            
-            for file_path in data_dir.glob("*.txt"):
-                with open(file_path, "r", encoding="utf-8") as f:
-                    texts.extend(self.text_splitter.split_text(f.read()))
-            
-            logger.info(f"Loaded {len(texts)} text chunks")
-            self.vector_store = FAISS.from_texts(texts, self.embeddings)
-            
-        except Exception as e:
-            logger.error(f"Error loading documents: {str(e)}")
-            raise
+def process_documents_and_answer_question(question: str, directory_path: str = ".") -> str:
+    load_dotenv()
 
-    def get_answer(self, question: str) -> tuple[str, List[str]]:
-        """Generate an answer for the given question using RAG."""
-        if not self.vector_store:
-            raise ValueError("Documents not loaded. Call load_documents first.")
+    openai_api_key = settings.OPENAI_API_KEY
+    if not openai_api_key:
+        raise ValueError("OpenAI API key is not set in environment variables.")
+    os.environ['OPENAI_API_KEY'] = openai_api_key
 
-        try:
-            qa_chain = RetrievalQA.from_chain_type(
-                llm=self.llm,
-                chain_type="stuff",
-                retriever=self.vector_store.as_retriever(
-                    search_kwargs={"k": 3}
-                ),
-                return_source_documents=True
-            )
-            
-            result = qa_chain({"query": question})
-            sources = [doc.page_content[:200] + "..." for doc in result["source_documents"]]
-            
-            return result["result"], sources
-            
-        except Exception as e:
-            logger.error(f"Error generating answer: {str(e)}")
-            raise
+    llm = ChatOpenAI(model=settings.GPT_4_TEXT_MODEL)
 
-# Create singleton instance
-rag_chain = RAGChain()
+    all_docs = []
+    for filename in os.listdir(directory_path):
+        if filename.endswith(".csv"):
+            file_path = os.path.join(directory_path, filename)
+            loader = CSVLoader(file_path=file_path)
+            docs = loader.load_and_split()
+            all_docs.extend(docs)
+
+    embeddings = OpenAIEmbeddings()
+    embedding_dimension = 1536
+    index = faiss.IndexFlatL2(embedding_dimension)
+    vector_store = FAISS(
+        embedding_function=embeddings,
+        index=index,
+        docstore=InMemoryDocstore(),
+        index_to_docstore_id={}
+    )
+    vector_store.add_documents(documents=all_docs)
+
+    retriever = vector_store.as_retriever()
+
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system_prompt),
+        ("human", "{question}"),
+    ])
+
+    question_answer_chain = create_stuff_documents_chain(llm, prompt)
+    rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+
+    response = rag_chain.invoke({"question": question})
+    return response["answer"]
