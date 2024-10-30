@@ -1,4 +1,4 @@
-# FastAPI LLM RAG Backend Application
+# FastAPI LLM RAG Backend Application on Medical Dataset (CSV)
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Pytest](https://img.shields.io/badge/pytest-0A9EDC?style=for-the-badge&logo=pytest)
