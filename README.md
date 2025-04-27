@@ -9,6 +9,7 @@
 ![Integration Tests](https://img.shields.io/badge/Tests-Integration%20Tests-6DA55F?style=for-the-badge&logo=pytest)
 ![Logging](https://img.shields.io/badge/Logging-Active-4B8BBE?style=for-the-badge&logo=python)
 ![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python)
+![image](https://github.com/user-attachments/assets/ae648b10-02da-4e8f-839e-84d8da10823a)
 
 
 
